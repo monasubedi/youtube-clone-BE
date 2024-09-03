@@ -17,9 +17,9 @@ router.put("/view/:id", addView);
 
 router.get("/random", randomVideos);
 
-router.get("/trend", trendingVideos);
+router.get("/trends", trendingVideos);
 
-router.get("/subscribedVideos", verifyToken, subscribedVideos);
+router.get("/sub", verifyToken, subscribedVideos);
 
 router.get("/tags", searchByTags);
 

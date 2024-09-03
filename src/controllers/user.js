@@ -1,4 +1,5 @@
 import User from "../models/user.js";
+import Video from "../models/video.js";
 import { createError } from "../utils/error.js";
 
 export const updateUser = async (req, res, next) => {
@@ -52,36 +53,56 @@ export const getUser = async (req, res, next) => {
 
 export const subscribe = async (req, res, next) => {
     const { id } = req.params;
+    console.log(id);
+
     try {
-        await User.findByIdAndUpdate(req.user.id, { $push: { subscribedUsers: id } });
-        await User.findById(id, { $inc: { subscribers: 1 } });
+        await User.findByIdAndUpdate(req.user.id, { $addToSet: { subscribedUsers: id } });
+        await User.findByIdAndUpdate(id, { $inc: { subscribers: 1 } });
         res.status(200).send("Subscription successful.")
     } catch (error) {
+        console.log(error);
+
         next(error);
     }
 }
 
-export const unsubscribe = async () => {
+export const unsubscribe = async (req, res, next) => {
     const { id } = req.params;
     try {
         await User.findByIdAndUpdate(req.user.id, { $pull: { subscribedUsers: id } });
-        await User.findById(id, { $inc: { subscribers: -1 } });
+        await User.findByIdAndUpdate(id, { $inc: { subscribers: -1 } });
         res.status(200).send("unsubscription successful.");
     } catch (error) {
         next(error);
     }
 }
 
-export const likeVideo = async () => {
+export const likeVideo = async (req, res, next) => {
+    const userId = req.user.id;
+    const videoId = req.params.videoId;
+
     try {
+        const video = await Video.findByIdAndUpdate(videoId, {
+            $addToSet:
+                { likes: userId }, $pull: { dislikes: userId }
+        });
+        res.status(200).send("Successfully liked the video.");
 
     } catch (error) {
         next(error);
     }
 }
 
-export const dislikeVideo = async () => {
+export const dislikeVideo = async (req, res, next) => {
+    const userId = req.user.id;
+    const videoId = req.params.videoId;
+
     try {
+        const video = await Video.findByIdAndUpdate(videoId, {
+            $addToSet:
+                { dislikes: userId }, $pull: { likes: userId }
+        });
+        res.status(200).send("Successfully disliked the video.");
 
     } catch (error) {
         next(error);
